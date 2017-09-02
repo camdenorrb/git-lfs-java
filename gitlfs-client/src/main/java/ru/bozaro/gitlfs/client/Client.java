@@ -7,6 +7,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.HTTP;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.bozaro.gitlfs.client.auth.AuthProvider;
@@ -324,6 +325,8 @@ public class Client {
       for (Map.Entry<String, String> entry : link.getHeader().entrySet()) {
         req.addHeader(entry.getKey(), entry.getValue());
       }
+      req.removeHeaders(HTTP.TRANSFER_ENCODING);
+      req.removeHeaders(HTTP.CONTENT_LEN);
     }
   }
 

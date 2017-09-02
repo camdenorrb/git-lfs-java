@@ -58,6 +58,8 @@ Version 0.12.0 (unreleased)
 
  * Fix ExternalAuthProvider for correct check SSH url with port
    (for example: ssh://git@example.com:22/project.git)
+ * Ignore `Transfer-Encoding` and `Content-Length` headers for
+   supportvisualstudio.com git-lfs implementation
 
 Version 0.11.1
 
