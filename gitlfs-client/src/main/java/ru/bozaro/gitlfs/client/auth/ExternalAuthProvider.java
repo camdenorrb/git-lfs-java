@@ -9,7 +9,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Get authentication data from external application.
@@ -50,15 +52,22 @@ public class ExternalAuthProvider extends CachedAuthProvider {
 
   @NotNull
   protected String[] getCommand(@NotNull Operation operation) {
-    return new String[]{
-        "ssh",
-        getAuthority(),
+    final List<String> args = new ArrayList<>();
+    args.add("ssh");
+    final String authority = getAuthority();
+    final int portSeparator = authority.lastIndexOf(':');
+    if (portSeparator > 0) {
+      args.add(authority.substring(0, portSeparator));
+      args.add("-p" + authority.substring(portSeparator + 1));
+    }
+    args.addAll(Arrays.asList(
         "-oBatchMode=yes",
         "-C",
         "git-lfs-authenticate",
         getPath(),
         operation.toValue()
-    };
+    ));
+    return args.toArray(new String[args.size()]);
   }
 
   @NotNull
