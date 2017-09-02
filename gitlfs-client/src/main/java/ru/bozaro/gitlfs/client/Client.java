@@ -28,6 +28,7 @@ import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
+import java.util.Objects;
 
 import static ru.bozaro.gitlfs.common.Constants.*;
 
@@ -320,14 +321,35 @@ public class Client {
     }
   }
 
-  protected void addHeaders(@NotNull HttpUriRequest req, @Nullable Link link) {
+  protected void addHeaders(@NotNull HttpUriRequest req, @Nullable Link link) throws IOException {
     if (link != null) {
       for (Map.Entry<String, String> entry : link.getHeader().entrySet()) {
         req.addHeader(entry.getKey(), entry.getValue());
       }
-      req.removeHeaders(HTTP.TRANSFER_ENCODING);
-      req.removeHeaders(HTTP.CONTENT_LEN);
     }
+    if (!req.containsHeader(HEADER_AUTHORIZATION)) {
+      final Operation operation;
+      switch (req.getMethod()) {
+        case "GET":
+        case "HEAD":
+          operation = Operation.Download;
+          break;
+        default:
+          operation = Operation.Upload;
+          break;
+      }
+      final Link auth = authProvider.getAuth(operation);
+      if (isSameHost(auth.getHref(), req.getURI())) {
+        for (Map.Entry<String, String> entry : auth.getHeader().entrySet()) {
+          if (entry.getKey().compareToIgnoreCase(HEADER_AUTHORIZATION) == 0) {
+            req.addHeader(entry.getKey(), entry.getValue());
+            break;
+          }
+        }
+      }
+    }
+    req.removeHeaders(HTTP.TRANSFER_ENCODING);
+    req.removeHeaders(HTTP.CONTENT_LEN);
   }
 
   protected static MessageDigest sha256() {
@@ -335,6 +357,29 @@ public class Client {
       return MessageDigest.getInstance("SHA-256");
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException(e);
+    }
+  }
+
+  protected boolean isSameHost(@NotNull URI a, @NotNull URI b) {
+    return Objects.equals(a.getScheme(), b.getScheme()) &&
+        Objects.equals(a.getHost(), b.getHost()) &&
+        (getPort(a) == getPort(b));
+  }
+
+  protected int getPort(@NotNull URI uri) {
+    int port = uri.getPort();
+    if (port >= 0) {
+      return port;
+    }
+    switch (uri.getScheme()) {
+      case "http":
+        return 80;
+      case "https":
+        return 443;
+      case "ssh":
+        return 22;
+      default:
+        return -1;
     }
   }
 }

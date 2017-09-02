@@ -60,6 +60,7 @@ Version 0.12.0 (unreleased)
    (for example: ssh://git@example.com:22/project.git)
  * Ignore `Transfer-Encoding` and `Content-Length` headers for
    supportvisualstudio.com git-lfs implementation
+ * Fix authentication with git by http[s] usage
 
 Version 0.11.1
 
