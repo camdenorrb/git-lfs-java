@@ -54,7 +54,7 @@ See https://github.com/bozaro/git-lfs-java/blob/master/gitlfs-server/src/test/ja
 
 ## Changes
 
-Version 0.12.0 (unreleased)
+Version 0.12.0
 
  * Fix ExternalAuthProvider for correct check SSH url with port
    (for example: ssh://git@example.com:22/project.git)
